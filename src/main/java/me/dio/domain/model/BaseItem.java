@@ -1,43 +1,42 @@
 package me.dio.domain.model;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.ZonedDateTime;
+import java.util.UUID;
+
+@Setter
+@Getter
 @MappedSuperclass
-public abstract class BaseItem {
-    
+public class BaseItem implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
     private String icon;
-    
     private String description;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private ZonedDateTime createdAt;
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private ZonedDateTime updatedAt;
 
-    public Long getId() {
-        return id;
+    protected BaseItem() {
     }
 
-    public void setId(Long id) {
+    protected BaseItem(UUID id, String icon, String description, ZonedDateTime createdAt, ZonedDateTime updatedAt) {
         this.id = id;
-    }
-
-    public String getIcon() {
-        return icon;
-    }
-
-    public void setIcon(String icon) {
         this.icon = icon;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
         this.description = description;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
-
 }

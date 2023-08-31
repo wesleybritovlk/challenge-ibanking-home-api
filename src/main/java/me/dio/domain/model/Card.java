@@ -1,48 +1,47 @@
 package me.dio.domain.model;
 
+import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-
+@Builder
+@Getter
 @Entity(name = "tb_card")
-public class Card {
-    
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "tb_card_number_uk", columnNames = {"number"})})
+public class Card implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(unique = true)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
+    @Column(nullable = false)
     private String number;
-    
-    @Column(name = "available_limit", precision = 13, scale = 2)
+    @Column(name = "available_limit", nullable = false, precision = 13, scale = 2)
     private BigDecimal limit;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private ZonedDateTime createdAt;
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private ZonedDateTime updatedAt;
 
-    public Long getId() {
-        return id;
+    protected Card() {
     }
 
-    public void setId(Long id) {
+    protected Card(UUID id, String number, BigDecimal limit, ZonedDateTime createdAt, ZonedDateTime updatedAt) {
         this.id = id;
-    }
-
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String number) {
         this.number = number;
-    }
-
-    public BigDecimal getLimit() {
-        return limit;
-    }
-
-    public void setLimit(BigDecimal limit) {
         this.limit = limit;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
-
 }

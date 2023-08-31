@@ -1,13 +1,13 @@
 package me.dio.domain.repository;
 
+import me.dio.domain.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import me.dio.domain.model.User;
+import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
-    
+public interface UserRepository extends JpaRepository<User, UUID> {
     boolean existsByAccountNumber(String number);
 
     boolean existsByCardNumber(String number);

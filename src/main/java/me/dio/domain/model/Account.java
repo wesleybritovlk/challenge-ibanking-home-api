@@ -1,69 +1,53 @@
 package me.dio.domain.model;
 
+import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.io.Serial;
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-
+@Builder
+@Getter
 @Entity(name = "tb_account")
-public class Account {
-
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "tb_account_number_uk", columnNames = {"number"})})
+public class Account implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(unique = true)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
+    @Column(nullable = false)
     private String number;
-
+    @Column(nullable = false)
     private String agency;
-
-    @Column(precision = 13, scale = 2)
+    @Column(nullable = false, precision = 13, scale = 2)
     private BigDecimal balance;
-
-    @Column(name = "additional_limit", precision = 13, scale = 2)
+    @Column(name = "additional_limit", nullable = false, precision = 13, scale = 2)
     private BigDecimal limit;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private ZonedDateTime createdAt;
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private ZonedDateTime updatedAt;
 
-    public Long getId() {
-        return id;
+    protected Account() {
     }
 
-    public void setId(Long id) {
+    protected Account(UUID id, String number, String agency, BigDecimal balance, BigDecimal limit, ZonedDateTime createdAt, ZonedDateTime updatedAt) {
         this.id = id;
-    }
-
-    public String getNumber() {
-        return number;
-    }
-
-    public void setNumber(String number) {
         this.number = number;
-    }
-
-    public String getAgency() {
-        return agency;
-    }
-
-    public void setAgency(String agency) {
         this.agency = agency;
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public void setBalance(BigDecimal balance) {
         this.balance = balance;
-    }
-
-    public BigDecimal getLimit() {
-        return limit;
-    }
-
-    public void setLimit(BigDecimal limit) {
         this.limit = limit;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
-
 }

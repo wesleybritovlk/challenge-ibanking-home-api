@@ -1,83 +1,64 @@
 package me.dio.domain.model;
 
+import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import static jakarta.persistence.FetchType.EAGER;
 
+@Builder
+@Getter
 @Entity(name = "tb_user")
-public class User {
-    
+public class User implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
+    @Column(nullable = false)
     private String name;
-
     @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "account_fk", foreignKey = @ForeignKey(name = "tb_user_account_fk"),
+            nullable = false, referencedColumnName = "id")
     private Account account;
-    
     @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "card_fk", foreignKey = @ForeignKey(name = "tb_user_card_fk"),
+            nullable = false, referencedColumnName = "id")
     private Card card;
-
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = EAGER)
+    @JoinColumn(name = "features_fk", foreignKey = @ForeignKey(name = "tb_user_features_fk"),
+            nullable = false, referencedColumnName = "id")
     private List<Feature> features;
-
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = EAGER)
+    @JoinColumn(name = "news_fk", foreignKey = @ForeignKey(name = "tb_user_news_fk"),
+            nullable = false, referencedColumnName = "id")
     private List<News> news;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private ZonedDateTime createdAt;
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private ZonedDateTime updatedAt;
 
-    public Long getId() {
-        return id;
+    protected User() {
     }
 
-    public void setId(Long id) {
+    protected User(UUID id, String name, Account account, Card card, List<Feature> features, List<News> news, ZonedDateTime createdAt, ZonedDateTime updatedAt) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
-    }
-
-    public Account getAccount() {
-        return account;
-    }
-
-    public void setAccount(Account account) {
         this.account = account;
-    }
-
-    public Card getCard() {
-        return card;
-    }
-
-    public void setCard(Card card) {
         this.card = card;
-    }
-
-    public List<Feature> getFeatures() {
-        return features;
-    }
-
-    public void setFeatures(List<Feature> features) {
         this.features = features;
-    }
-
-    public List<News> getNews() {
-        return news;
-    }
-
-    public void setNews(List<News> news) {
         this.news = news;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
-
 }
