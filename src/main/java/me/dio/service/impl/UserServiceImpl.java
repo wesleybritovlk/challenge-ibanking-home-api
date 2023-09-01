@@ -1,5 +1,6 @@
 package me.dio.service.impl;
 
+import lombok.RequiredArgsConstructor;
 import me.dio.domain.model.User;
 import me.dio.domain.repository.UserRepository;
 import me.dio.service.UserService;
@@ -8,10 +9,14 @@ import me.dio.service.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneId;
 import java.util.List;
+import java.util.UUID;
 
+import static java.time.ZonedDateTime.now;
 import static java.util.Optional.ofNullable;
 
+@RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -26,15 +31,21 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
+    private final UserRepository repository;
 
     @Transactional(readOnly = true)
     public List<User> findAll() {
         return this.userRepository.findAll();
+        var findAll = repository.findAll();
+        return findAll;
     }
 
     @Transactional(readOnly = true)
     public User findById(Long id) {
         return this.userRepository.findById(id).orElseThrow(NotFoundException::new);
+    public User findById(UUID id) {
+        User findById = repository.findById(id).orElseThrow(NotFoundException::new);
+        return findById;
     }
 
     @Transactional
@@ -42,15 +53,15 @@ public class UserServiceImpl implements UserService {
         ofNullable(userToCreate).orElseThrow(() -> new BusinessException("User to create must not be null."));
         ofNullable(userToCreate.getAccount()).orElseThrow(() -> new BusinessException("User account must not be null."));
         ofNullable(userToCreate.getCard()).orElseThrow(() -> new BusinessException("User card must not be null."));
-
-        this.validateChangeableId(userToCreate.getId(), "created");
-        if (userRepository.existsByAccountNumber(userToCreate.getAccount().getNumber())) {
-            throw new BusinessException("This account number already exists.");
+        if (repository.existsByAccountNumber(userToCreate.getAccount().getNumber())) {
+            throw new BusinessException("account number already exists.");
         }
-        if (userRepository.existsByCardNumber(userToCreate.getCard().getNumber())) {
-            throw new BusinessException("This card number already exists.");
+        if (repository.existsByCardNumber(userToCreate.getCard().getNumber())) {
+            throw new BusinessException("card number already exists.");
         }
         return this.userRepository.save(userToCreate);
+        User create = repository.save(userToCreate);
+        return create;
     }
 
     @Transactional
@@ -68,6 +79,12 @@ public class UserServiceImpl implements UserService {
         dbUser.setNews(userToUpdate.getNews());
 
         return this.userRepository.save(dbUser);
+    public User update(UUID id, User userToUpdate) {
+        User dbUser = findById(id);
+        if (!dbUser.getId().equals(userToUpdate.getId())) throw new BusinessException("Update IDs must be the same.");
+        dbUser = User.builder().id(id).name(userToUpdate.getName()).account(userToUpdate.getAccount()).card(userToUpdate.getCard()).features(userToUpdate.getFeatures()).news(userToUpdate.getNews()).updatedAt(now(ZoneId.of("America/Sao_Paulo"))).build();
+        User update = repository.save(dbUser);
+        return update;
     }
 
     @Transactional
@@ -84,3 +101,9 @@ public class UserServiceImpl implements UserService {
     }
 }
 
+
+    public void delete(UUID id) {
+        User dbUser = findById(id);
+        repository.delete(dbUser);
+    }
+}
