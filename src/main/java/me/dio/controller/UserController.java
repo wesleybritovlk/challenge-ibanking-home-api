@@ -12,6 +12,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @CrossOrigin
@@ -19,37 +20,43 @@ import java.util.stream.Collectors;
 @RequestMapping("/users")
 @Tag(name = "Users Controller", description = "RESTful API for managing users.")
 public record UserController(UserService userService) {
+public record UserController(UserService service) {
 
     @GetMapping
     @Operation(summary = "Get all users", description = "Retrieve a list of all registered users")
-    @ApiResponses(value = { 
+    @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Operation successful")
     })
     public ResponseEntity<List<UserDto>> findAll() {
         var users = userService.findAll();
         var usersDto = users.stream().map(UserDto::new).collect(Collectors.toList());
         return ResponseEntity.ok(usersDto);
+    public ResponseEntity<List<UserDto>> getAll() {
+        var users = service.findAll();
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get a user by ID", description = "Retrieve a specific user based on its ID")
-    @ApiResponses(value = { 
+    @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Operation successful"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseEntity<UserDto> findById(@PathVariable Long id) {
         var user = userService.findById(id);
         return ResponseEntity.ok(new UserDto(user));
+    public ResponseEntity<UserDto> getById(@PathVariable UUID id) {
+        var user = service.findById(id);
     }
 
     @PostMapping
     @Operation(summary = "Create a new user", description = "Create a new user and return the created user's data")
-    @ApiResponses(value = { 
+    @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User created successfully"),
             @ApiResponse(responseCode = "422", description = "Invalid user data provided")
     })
     public ResponseEntity<UserDto> create(@RequestBody UserDto userDto) {
         var user = userService.create(userDto.toModel());
+        var user = service.create(userDto.toModel());
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(user.getId())
@@ -59,7 +66,7 @@ public record UserController(UserService userService) {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update a user", description = "Update the data of an existing user based on its ID")
-    @ApiResponses(value = { 
+    @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User updated successfully"),
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "422", description = "Invalid user data provided")
@@ -67,16 +74,20 @@ public record UserController(UserService userService) {
     public ResponseEntity<UserDto> update(@PathVariable Long id, @RequestBody UserDto userDto) {
         var user = userService.update(id, userDto.toModel());
         return ResponseEntity.ok(new UserDto(user));
+    public ResponseEntity<UserDto> update(@PathVariable UUID id, @RequestBody UserDto userDto) {
+        var user = service.update(id, userDto.toModel());
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a user", description = "Delete an existing user based on its ID")
-    @ApiResponses(value = { 
+    @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "User deleted successfully"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        service.delete(id);
     }
 }
